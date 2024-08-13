@@ -1,0 +1,29 @@
+# Ignore any file named in .DS_Store
+.DS_Store
+
+# Ignore editor specific files
+.idea/
+.vscode/
+
+# Compiled Go binaries
+*.exe
+*.test
+
+# Log files
+*.log
+
+# Temp files
+*.tmp
+
+# Configuration file
+config.yaml
+
+# http requests
+*.http
+
+# Logger files
+*logger.json
+
+
+# Ignore user-specific files
+*.swp
