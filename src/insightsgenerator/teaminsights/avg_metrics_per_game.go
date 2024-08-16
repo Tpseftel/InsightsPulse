@@ -1,12 +1,14 @@
 package teaminsights
 
 import (
+	"fmt"
 	"math"
 	"sync"
 
 	"insights-pulse/src/dataclients"
 	"insights-pulse/src/models/insights"
 	"insights-pulse/src/models/responses"
+	"insights-pulse/src/utils"
 
 	"insights-pulse/src/db"
 	"insights-pulse/src/logger"
@@ -17,12 +19,34 @@ type AvgMatchMetricsGenerator struct {
 	TeamClient *dataclients.TeamClient
 }
 
-func (a *AvgMatchMetricsGenerator) GetFixtureIds(teamId, season, league string) []int {
+func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta insights.StatsMetaData) error {
+	// INFO: Step 1. Get fixture ids
+	fixtureIds := a.getFixtureIds(imeta.TeamId, imeta.Season, imeta.LeagueId)
+	fmt.Println("Fixture Ids: ", fixtureIds)
+
+	idsChunks := utils.StringfyIds(fixtureIds, 20)
+	fmt.Println(" idsChunks: ", idsChunks)
+
+	// INFO: Step 2. Get fixture stats
+	fixtureStats := a.getFixtureStats(idsChunks)
+
+	// INFO: Step 3. Generate stats details
+	statsDetails := a.calculateStatsDetails(fixtureStats)
+
+	fmt.Println("Stats Details: ", statsDetails)
+
+	// INFO: Step 4. Save the insights
+	a.saveMetrics(imeta, statsDetails)
+
+	return nil
+}
+
+func (a *AvgMatchMetricsGenerator) getFixtureIds(teamId, season, league string) []int {
 	fixtureIds := a.TeamClient.GetFixtures(teamId, league, season)
 	return fixtureIds
 }
 
-func (a *AvgMatchMetricsGenerator) GetFixtureStats(idsChunks []string) []responses.FixtureStatsResponse {
+func (a *AvgMatchMetricsGenerator) getFixtureStats(idsChunks []string) []responses.FixtureStatsResponse {
 	// Holds the api responses for each idschunk
 	var seasonFixtures = make([]responses.FixtureStatsResponse, 0)
 	var mu sync.Mutex
@@ -41,7 +65,7 @@ func (a *AvgMatchMetricsGenerator) GetFixtureStats(idsChunks []string) []respons
 	return seasonFixtures
 }
 
-func (a *AvgMatchMetricsGenerator) CalculateStatsDetails(fixtureStats []responses.FixtureStatsResponse) *insights.MatchMetrics {
+func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []responses.FixtureStatsResponse) *insights.MatchMetrics {
 	stats := make(map[string]insights.MatchStatsDetail)
 	for _, response := range fixtureStats {
 		for _, fixture := range response.Response {
@@ -96,7 +120,7 @@ func (a *AvgMatchMetricsGenerator) CalculateStatsDetails(fixtureStats []response
 
 }
 
-func (a *AvgMatchMetricsGenerator) SaveMetrics(meta insights.StatsMetaData, insights *insights.MatchMetrics) error {
+func (a *AvgMatchMetricsGenerator) saveMetrics(meta insights.StatsMetaData, insights *insights.MatchMetrics) error {
 	teamRepo := sqlrepo.NewTeamRepository(db.DB)
 	err := teamRepo.SaveAvgInsightsPerGame(meta, insights)
 	if err != nil {

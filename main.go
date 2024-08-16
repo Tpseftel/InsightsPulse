@@ -21,10 +21,6 @@ func main() {
 	avgMetricsGen := &teaminsights.AvgMatchMetricsGenerator{
 		TeamClient: teamClient,
 	}
-	// INFO: Initialize the team insights generator
-	tg := teaminsights.TeamInsightGenerator{
-		Ig: avgMetricsGen,
-	}
 
 	// INFO: Generate and save insights
 	statMetadata := insights.StatsMetadata{
@@ -32,6 +28,6 @@ func main() {
 		Season:   "2023",
 		LeagueId: con.PREMIER_LEAGUE,
 	}
-	tg.GenerateAndSaveInsights(insights.StatsMetaData(statMetadata))
+	avgMetricsGen.GenerateAndSaveInsights(insights.StatsMetaData(statMetadata))
 
 }
