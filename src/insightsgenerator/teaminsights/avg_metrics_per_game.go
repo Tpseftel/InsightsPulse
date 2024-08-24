@@ -42,7 +42,7 @@ func (a *AvgMatchMetricsGenerator) ShouldUpdate(config InsightConfig) bool {
 	lastUpdated, err := a.TeamRepo.GetLastUpdatedTime(config.TableName)
 	if err != nil {
 		logger.GetLogger().Error("Error getting last updated: " + err.Error())
-		return false
+		return true
 	}
 	if lastUpdated.IsZero() {
 		return true

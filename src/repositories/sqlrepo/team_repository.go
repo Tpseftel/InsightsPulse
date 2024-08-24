@@ -90,6 +90,9 @@ func (repo *TeamRepository) GetLastUpdatedTime(tableName string) (time.Time, err
 	var updateTimeBytes []byte
 	err := repo.Conn.QueryRow(query).Scan(&updateTimeBytes)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return time.Time{}, nil
+		}
 		logger.GetLogger().Error("Error getting last updated time: " + err.Error())
 		return time.Time{}, errors.New("error getting last updated time")
 	}
