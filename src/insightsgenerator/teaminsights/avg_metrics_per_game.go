@@ -1,8 +1,8 @@
 package teaminsights
 
 import (
-	"fmt"
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
@@ -30,12 +30,11 @@ type InsightConfig struct {
 
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 	return InsightConfig{
-		Type:      "AvgMatchMetricsGenerator",
-		TableName: "avg_insights_per_game_team",
-		Api:       "https://v3.football.api-sports.io",
-		Endpoints: []string{"/fixtures?team=33&league=39&season=2020"},
-		// UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
-		UpdateFrequency: 1 * time.Hour, // Minute update
+		Type:            "AvgMatchMetricsGenerator",
+		TableName:       "avg_insights_per_game_team",
+		Api:             "https://v3.football.api-sports.io",
+		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
+		UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
 	}
 }
 
@@ -59,18 +58,14 @@ func (a *AvgMatchMetricsGenerator) ShouldUpdate(config InsightConfig) bool {
 func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta insights.StatsMetaData) error {
 	// INFO: Step 1. Get fixture ids
 	fixtureIds := a.getFixtureIds(imeta.TeamId, imeta.Season, imeta.LeagueId)
-	fmt.Println("Fixture Ids: ", fixtureIds)
 
 	idsChunks := utils.StringfyIds(fixtureIds, 20)
-	fmt.Println(" idsChunks: ", idsChunks)
 
 	// INFO: Step 2. Get fixture stats
 	fixtureStats := a.getFixtureStats(idsChunks)
 
 	// INFO: Step 3. Generate stats details
-	statsDetails := a.calculateStatsDetails(fixtureStats)
-
-	fmt.Println("Stats Details: ", statsDetails)
+	statsDetails := a.calculateStatsDetails(fixtureStats, imeta.TeamId)
 
 	// INFO: Step 4. Save the insights
 	a.saveMetrics(imeta, statsDetails)
@@ -104,47 +99,150 @@ func (a *AvgMatchMetricsGenerator) getFixtureStats(idsChunks []string) []respons
 	return seasonFixtures
 }
 
-func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []responses.FixtureStatsResponse) *insights.MatchMetrics {
+func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []responses.FixtureStatsResponse, teamId string) *insights.MatchMetrics {
 	stats := make(map[string]insights.MatchStatsDetail)
 	for _, response := range fixtureStats {
 		for _, fixture := range response.Response {
 			for _, stat := range fixture.Statistics {
-				if stat.Team.ID == 33 {
+				if utils.ConvToString(stat.Team.ID) == teamId {
 					for _, v := range stat.Statistics {
 						switch v.Type {
 						case "Shots on Goal":
 							if value, ok := v.Value.(float64); ok {
-								tempStat := stats[v.Type] // make a copy of the struct
+								tempStat := stats[v.Type]
 								tempStat.Num++
 								tempStat.Sum += value
 								stats[v.Type] = tempStat
 							}
 						case "Shots off Goal":
 							if value, ok := v.Value.(float64); ok {
-								tempStat := stats[v.Type] // make a copy of the struct
+								tempStat := stats[v.Type]
 								tempStat.Num++
 								tempStat.Sum += value
 								stats[v.Type] = tempStat
 							}
 						case "Total Shots":
 							if value, ok := v.Value.(float64); ok {
-								tempStat := stats[v.Type] // make a copy of the struct
+								tempStat := stats[v.Type]
 								tempStat.Num++
 								tempStat.Sum += value
 								stats[v.Type] = tempStat
 							}
 						case "Blocked Shots":
 							if value, ok := v.Value.(float64); ok {
-								tempStat := stats[v.Type] // make a copy of the struct
+								tempStat := stats[v.Type]
 								tempStat.Num++
 								tempStat.Sum += value
 								stats[v.Type] = tempStat
 							}
 						case "Shots insidebox":
 							if value, ok := v.Value.(float64); ok {
-								tempStat := stats[v.Type] // make a copy of the struct
+								tempStat := stats[v.Type]
 								tempStat.Num++
 								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Shots outsidebox":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Fouls":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Corner Kicks":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Offsides":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Ball Possession":
+							tempStat := stats[v.Type]
+							if value, ok := v.Value.(float64); ok {
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							} else if value, ok := v.Value.(string); ok {
+								pureFloat, _ := utils.GetFloatFromPercentage(value)
+								tempStat.Num++
+								tempStat.Sum += pureFloat
+								stats[v.Type] = tempStat
+							}
+						case "Yellow Cards":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Red Cards":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Goalkeeper Saves":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Total passes":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Passes accurate":
+							if value, ok := v.Value.(float64); ok {
+								tempStat := stats[v.Type]
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							}
+						case "Passes %":
+							tempStat := stats[v.Type]
+							if value, ok := v.Value.(float64); ok {
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							} else if value, ok := v.Value.(string); ok {
+								pureFloat, _ := utils.GetFloatFromPercentage(value)
+								tempStat.Num++
+								tempStat.Sum += pureFloat
+								stats[v.Type] = tempStat
+							}
+						case "expected_goals":
+							tempStat := stats[v.Type]
+							if value, ok := v.Value.(float64); ok {
+								tempStat.Num++
+								tempStat.Sum += value
+								stats[v.Type] = tempStat
+							} else if value, ok := v.Value.(string); ok {
+								pureFloat, err := strconv.ParseFloat(value, 64)
+								if err != nil {
+									logger.GetLogger().Warn("Error parsing float: %v\n")
+									continue
+								}
+								tempStat.Num++
+								tempStat.Sum += pureFloat
 								stats[v.Type] = tempStat
 							}
 						}
