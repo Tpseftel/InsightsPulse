@@ -3,11 +3,16 @@ package sqlrepo
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"time"
 
 	"insights-pulse/src/logger"
 	"insights-pulse/src/models"
 	"insights-pulse/src/models/insights"
 )
+
+const timeLayout = "2006-01-02 15:04:05"
 
 type TeamRepository struct {
 	Conn *sql.DB
@@ -73,4 +78,34 @@ func (repo *TeamRepository) SaveAvgInsightsPerGame(meta insights.StatsMetaData, 
 	}
 	logger.GetLogger().Info("Saved Average Insights Per Game")
 	return err
+}
+
+func (repo *TeamRepository) GetLastUpdatedTime(tableName string) (time.Time, error) {
+	query := `
+		SELECT updated_at
+		FROM ` + tableName + `
+		ORDER BY updated_at DESC
+		LIMIT 1
+	`
+	var updateTimeBytes []byte
+	err := repo.Conn.QueryRow(query).Scan(&updateTimeBytes)
+	if err != nil {
+		logger.GetLogger().Error("Error getting last updated time: " + err.Error())
+		return time.Time{}, errors.New("error getting last updated time")
+	}
+	updatedAtStr := string(updateTimeBytes)
+	updateTime, err := time.Parse(timeLayout, updatedAtStr)
+	if err != nil {
+		logger.GetLogger().Error("Error parsing time: " + err.Error())
+		return time.Time{}, errors.New("error parsing time")
+	}
+
+	if updateTime.IsZero() {
+		logger.GetLogger().Error("No data found")
+		return time.Time{}, errors.New("no data found")
+	}
+
+	logger.GetLogger().Info(fmt.Sprintf("Table: %s, Last Updated Time: %s", tableName, updateTime))
+	return updateTime, nil
+
 }

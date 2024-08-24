@@ -6,4 +6,5 @@ import (
 
 type InsightsGenerator interface {
 	GenerateAndSaveInsights(imeta insights.StatsMetaData) error
+	GetConfig() InsightConfig
 }

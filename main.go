@@ -7,19 +7,22 @@ import (
 	"insights-pulse/src/db"
 	"insights-pulse/src/insightsgenerator/teaminsights"
 	"insights-pulse/src/models/insights"
+	"insights-pulse/src/repositories/sqlrepo"
 )
 
 func main() {
 	// Initialize Database Global Variable
 	db.InitDb()
 
-	// INFO: Initialize the clients
+	// INFO: Initialize clients
 	apiClient := apiclients.NewApiFootballClientImp()
 	teamClient := dataclients.NewTeamClient(apiClient)
+	teamRepo := sqlrepo.NewTeamRepository(db.DB)
 
-	// INFO: Initialize the generator
+	// INFO: Initialize the Insights generator
 	avgMetricsGen := &teaminsights.AvgMatchMetricsGenerator{
 		TeamClient: teamClient,
+		TeamRepo:   teamRepo,
 	}
 
 	// INFO: Generate and save insights
@@ -28,6 +31,11 @@ func main() {
 		Season:   "2023",
 		LeagueId: con.PREMIER_LEAGUE,
 	}
-	avgMetricsGen.GenerateAndSaveInsights(insights.StatsMetaData(statMetadata))
+
+	// INFO: Check if the insights should be updated
+	if avgMetricsGen.ShouldUpdate(avgMetricsGen.GetConfig()) {
+		avgMetricsGen.GenerateAndSaveInsights(insights.StatsMetaData(statMetadata))
+		
+	}
 
 }

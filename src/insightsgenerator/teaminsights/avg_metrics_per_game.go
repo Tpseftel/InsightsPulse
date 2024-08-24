@@ -4,19 +4,56 @@ import (
 	"fmt"
 	"math"
 	"sync"
+	"time"
 
 	"insights-pulse/src/dataclients"
 	"insights-pulse/src/models/insights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
 
-	"insights-pulse/src/db"
 	"insights-pulse/src/logger"
 	"insights-pulse/src/repositories/sqlrepo"
 )
 
 type AvgMatchMetricsGenerator struct {
 	TeamClient *dataclients.TeamClient
+	TeamRepo   *sqlrepo.TeamRepository
+}
+
+type InsightConfig struct {
+	Type            string
+	Api             string
+	Endpoints       []string
+	TableName       string
+	UpdateFrequency time.Duration
+}
+
+func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
+	return InsightConfig{
+		Type:      "AvgMatchMetricsGenerator",
+		TableName: "avg_insights_per_game_team",
+		Api:       "https://v3.football.api-sports.io",
+		Endpoints: []string{"/fixtures?team=33&league=39&season=2020"},
+		// UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
+		UpdateFrequency: 1 * time.Hour, // Minute update
+	}
+}
+
+func (a *AvgMatchMetricsGenerator) ShouldUpdate(config InsightConfig) bool {
+	lastUpdated, err := a.TeamRepo.GetLastUpdatedTime(config.TableName)
+	if err != nil {
+		logger.GetLogger().Error("Error getting last updated: " + err.Error())
+		return false
+	}
+	if lastUpdated.IsZero() {
+		return true
+
+	}
+	// Check if the last update was more than 7 days ago
+	if time.Since(lastUpdated) > config.UpdateFrequency {
+		return true
+	}
+	return false
 }
 
 func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta insights.StatsMetaData) error {
@@ -37,6 +74,8 @@ func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta insights.StatsM
 
 	// INFO: Step 4. Save the insights
 	a.saveMetrics(imeta, statsDetails)
+
+	logger.GetLogger().Info(a.GetConfig().Type + " Saved successfully")
 
 	return nil
 }
@@ -121,8 +160,7 @@ func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []response
 }
 
 func (a *AvgMatchMetricsGenerator) saveMetrics(meta insights.StatsMetaData, insights *insights.MatchMetrics) error {
-	teamRepo := sqlrepo.NewTeamRepository(db.DB)
-	err := teamRepo.SaveAvgInsightsPerGame(meta, insights)
+	err := a.TeamRepo.SaveAvgInsightsPerGame(meta, insights)
 	if err != nil {
 		logger.GetLogger().Error("Error saving to db: " + err.Error())
 		return err

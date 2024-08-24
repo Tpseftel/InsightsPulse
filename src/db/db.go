@@ -53,41 +53,6 @@ func InitDb() {
 }
 
 func createTables() {
-	teamsTable := `
-	CREATE TABLE IF NOT EXISTS teams (
-		id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        code TEXT NOT NULL,
-        country TEXT NOT NULL,
-        founded INTEGER NOT NULL,
-        national BOOLEAN NOT NULL,
-        logo TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );`
-	_, err := DB.Exec(teamsTable)
-	if err != nil {
-		log.Error("Create table Error: " + err.Error())
-		panic(err)
-	}
-	log.Info("Table teams created successfully")
-
-	usersTable := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		username VARCHAR(50) NOT NULL UNIQUE,
-		password_hash VARCHAR(255) NOT NULL,
-		email VARCHAR(100) NOT NULL UNIQUE,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-	);`
-	_, err = DB.Exec(usersTable)
-	if err != nil {
-		log.Error("Create table Error: " + err.Error())
-		panic(err)
-	}
-	log.Info("Table users created successfully")
-
 	// Insights Tables
 	avgInsightsPerGameTeam := `CREATE TABLE IF NOT EXISTS avg_insights_per_game_team (
 		team_id VARCHAR(255),
@@ -110,9 +75,11 @@ func createTables() {
 		passes_accurate JSON,
 		passes_percentage JSON,
 		expected_goals JSON,
-		PRIMARY KEY (team_id, season, league_id)
+		PRIMARY KEY (team_id, season, league_id),
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 	);`
-	_, err = DB.Exec(avgInsightsPerGameTeam)
+	_, err := DB.Exec(avgInsightsPerGameTeam)
 	if err != nil {
 		log.Error("Create table Error: " + err.Error())
 		panic(err)
