@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"insights-pulse/src/apiclients"
 	con "insights-pulse/src/constants"
 	"insights-pulse/src/dataclients"
@@ -27,7 +28,10 @@ func main() {
 
 	// INFO: Generate and save insights
 	statMetadata := insights.StatsMetadata{
-		TeamId:   "33",
+		// TeamId: "33",
+		// TeamId:   "50",
+		// TeamId:   "42",
+		TeamId:   "55",
 		Season:   "2023",
 		LeagueId: con.PREMIER_LEAGUE,
 	}
@@ -35,7 +39,10 @@ func main() {
 	// INFO: Check if the insights should be updated
 	if avgMetricsGen.ShouldUpdate(avgMetricsGen.GetConfig()) {
 		avgMetricsGen.GenerateAndSaveInsights(insights.StatsMetaData(statMetadata))
-		
+	} else {
+		fmt.Println("No time for update yet")
 	}
+
+	fmt.Println("------------Successfully generated and saved insights------------")
 
 }

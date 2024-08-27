@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func GetConfig() (Config, error) {
-	configFile, err := os.ReadFile("./src/config/config.yaml")
+	configFile, err := os.ReadFile("./config.yaml")
 	if err != nil {
 		panic("cannot read configuration variables")
 	}
