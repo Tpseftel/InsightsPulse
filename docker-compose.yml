@@ -10,20 +10,20 @@ services:
     networks:
       - my-network
     environment:
-      - DB_HOST=mariadb
+      - DB_HOST=${DB_HOST}
       - DB_PORT=3306
-      - DB_USER=seniorTheo
-      - DB_PASSWORD=userPassword89
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_USER_PASS}
     
 
   mariadb:
     image: mariadb:latest
     container_name: my-go-mariadb-container
     environment:
-      MYSQL_ROOT_PASSWORD: 'testDb17root'
-      MYSQL_USER: 'seniorTheo'
-      MYSQL_PASSWORD: 'userPassword89'  
-      MYSQL_DATABASE: 'f_insights'
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_USER_PASS}  
+      MYSQL_DATABASE: ${DB_DATABASE}
     volumes:
       - mysqldata:/var/lib/mysql
     ports:

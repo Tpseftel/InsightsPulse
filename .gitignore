@@ -24,6 +24,8 @@ config.yaml
 # Logger files
 *logger.json
 
+*.env
+
 
 # Ignore user-specific files
 *.swp
