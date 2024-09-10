@@ -9,7 +9,7 @@ import (
 
 	"insights-pulse/src/logger"
 	"insights-pulse/src/models"
-	"insights-pulse/src/models/insights"
+	"insights-pulse/src/models/insights/teaminsights"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -42,7 +42,7 @@ func (repo *TeamRepository) SaveTeam(t models.Team) error {
 }
 
 // INFO: Insights related methods
-func (repo *TeamRepository) SaveAvgInsightsPerGame(meta insights.StatsMetaData, avgInsights *insights.MatchMetrics) error {
+func (repo *TeamRepository) SaveAvgInsightsPerGame(meta teaminsights.StatsMetaData, avgInsights *teaminsights.MatchMetrics) error {
 	query := `
 		INSERT INTO avg_insights_per_game_team (
 			team_id, season, league_id, shots_on_goal, shots_off_goal, total_shots, blocked_shots, shots_inside_box, shots_outside_box, fouls, corner_kicks, offsides, ball_possession, yellow_cards, red_cards, goalkeeper_saves, total_passes, passes_accurate, passes_percentage, expected_goals

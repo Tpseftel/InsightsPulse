@@ -1,4 +1,4 @@
-package teaminsights
+package teamgenerator
 
 import (
 	"math"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"insights-pulse/src/dataclients"
-	"insights-pulse/src/models/insights"
+	"insights-pulse/src/models/insights/teaminsights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
 
@@ -30,11 +30,12 @@ type InsightConfig struct {
 
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 	return InsightConfig{
-		Type:            "AvgMatchMetricsGenerator",
-		TableName:       "avg_insights_per_game_team",
-		Api:             "https://v3.football.api-sports.io",
-		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
-		UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
+		Type:      "AvgMatchMetricsGenerator",
+		TableName: "avg_insights_per_game_team",
+		Api:       "https://v3.football.api-sports.io",
+		Endpoints: []string{"/fixtures?team=33&league=39&season=2020"},
+		// UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
+		UpdateFrequency: 1 * time.Minute, //  Minutely update
 	}
 }
 
@@ -55,7 +56,7 @@ func (a *AvgMatchMetricsGenerator) ShouldUpdate(config InsightConfig) bool {
 	return false
 }
 
-func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta insights.StatsMetaData) error {
+func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.StatsMetaData) error {
 	// INFO: Step 1. Get fixture ids
 	fixtureIds := a.getFixtureIds(imeta.TeamId, imeta.Season, imeta.LeagueId)
 
@@ -99,8 +100,8 @@ func (a *AvgMatchMetricsGenerator) getFixtureStats(idsChunks []string) []respons
 	return seasonFixtures
 }
 
-func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []responses.FixtureStatsResponse, teamId string) *insights.MatchMetrics {
-	stats := make(map[string]insights.MatchStatsDetail)
+func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []responses.FixtureStatsResponse, teamId string) *teaminsights.MatchMetrics {
+	stats := make(map[string]teaminsights.MatchStatsDetail)
 	for _, response := range fixtureStats {
 		for _, fixture := range response.Response {
 			for _, stat := range fixture.Statistics {
@@ -257,7 +258,7 @@ func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []response
 
 }
 
-func (a *AvgMatchMetricsGenerator) saveMetrics(meta insights.StatsMetaData, insights *insights.MatchMetrics) error {
+func (a *AvgMatchMetricsGenerator) saveMetrics(meta teaminsights.StatsMetaData, insights *teaminsights.MatchMetrics) error {
 	err := a.TeamRepo.SaveAvgInsightsPerGame(meta, insights)
 	if err != nil {
 		logger.GetLogger().Error("Error saving to db: " + err.Error())
@@ -267,7 +268,7 @@ func (a *AvgMatchMetricsGenerator) saveMetrics(meta insights.StatsMetaData, insi
 	return nil
 }
 
-func calculateAverageStats(stats map[string]insights.MatchStatsDetail) {
+func calculateAverageStats(stats map[string]teaminsights.MatchStatsDetail) {
 	for key, v := range stats {
 		if v.Num != 0 {
 			tempVar := v.Sum / v.Num
@@ -279,9 +280,9 @@ func calculateAverageStats(stats map[string]insights.MatchStatsDetail) {
 	}
 }
 
-func mapStatsToInsights(stats map[string]insights.MatchStatsDetail) *insights.MatchMetrics {
+func mapStatsToInsights(stats map[string]teaminsights.MatchStatsDetail) *teaminsights.MatchMetrics {
 	// Initialize the AverageInsightsPerGame with empty StatDetail pointers
-	insights := insights.NewMatchMetrics()
+	insights := teaminsights.NewMatchMetrics()
 	// Map the data from stats to the fields in AverageInsightsPerGame
 	for key, stat := range stats {
 		switch key {
