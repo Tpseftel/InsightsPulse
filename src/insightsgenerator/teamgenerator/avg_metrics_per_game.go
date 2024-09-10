@@ -30,12 +30,11 @@ type InsightConfig struct {
 
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 	return InsightConfig{
-		Type:      "AvgMatchMetricsGenerator",
-		TableName: "avg_insights_per_game_team",
-		Api:       "https://v3.football.api-sports.io",
-		Endpoints: []string{"/fixtures?team=33&league=39&season=2020"},
-		// UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
-		UpdateFrequency: 1 * time.Minute, //  Minutely update
+		Type:            "AvgMatchMetricsGenerator",
+		TableName:       "avg_insights_per_game_team",
+		Api:             "https://v3.football.api-sports.io",
+		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
+		UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
 	}
 }
 
