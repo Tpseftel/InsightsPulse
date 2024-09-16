@@ -14,7 +14,7 @@ import (
 )
 
 type AvgMatchMetricsGenerator struct {
-	InsightGeneratorBase
+	*InsightGeneratorBase
 }
 
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
