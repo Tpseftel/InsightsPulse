@@ -54,7 +54,7 @@ func (i *InsightGeneratorBase) ShouldUpdate(config InsightConfig) bool {
 	}
 }
 
-func (i *HomeAwayMetricsGenerator) LogInfo(config InsightConfig, imeta teaminsights.StatsMetaData) {
+func (i *InsightGeneratorBase) LogInfo(config InsightConfig, imeta teaminsights.StatsMetaData) {
 	logger.GetLogger().Info(config.Type + " : Successfully run")
 	logger.GetLogger().Info(utils.ConvToString(imeta))
 	logger.GetLogger().Info(utils.StructToString(config))

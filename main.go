@@ -20,20 +20,20 @@ func main() {
 	teamClient := dataclients.NewTeamClient(apiClient)
 	teamRepo := sqlrepo.NewTeamRepository(db.DB)
 
-	// INFO: Initialize the Insights generator
-	avgMetricsGen := &teamgenerator.AvgMatchMetricsGenerator{
-		TeamClient: teamClient,
-		TeamRepo:   teamRepo,
-	}
+	var insigeneratorBase *teamgenerator.InsightGeneratorBase = teamgenerator.NewInsightGeneratorBase(teamClient, teamRepo)
 
-	// INFO: Generate and save insights
+	// INFO: Insights Metadata
 	statMetadata := teaminsights.StatsMetaData{
-		// TeamId: "33",
-		// TeamId:   "50",
-		TeamId: "42",
-		// TeamId:   "55",
+		TeamId:   "42",
 		Season:   "2023",
 		LeagueId: con.PREMIER_LEAGUE,
+	}
+
+	// INFO: ====== Avg Match Metrics Generator ======
+	fmt.Println("------------ Avg Match Metrics Generator ------------")
+	// INFO: Initialize the Insights generator
+	var avgMetricsGen teamgenerator.InsightsGenerator = &teamgenerator.AvgMatchMetricsGenerator{
+		InsightGeneratorBase: insigeneratorBase,
 	}
 
 	// INFO: Check if the insights should be updated
@@ -43,6 +43,18 @@ func main() {
 		fmt.Println("No time for update yet")
 	}
 
-	fmt.Println("------------Successfully generated and saved insights------------")
+	// INFO: ====== Home Away Metrics Generator ======
+	fmt.Println("------------ Home Away Metrics Generator ------------")
+
+	var homeAwayMetricsGen teamgenerator.InsightsGenerator = &teamgenerator.HomeAwayMetricsGenerator{
+		InsightGeneratorBase: insigeneratorBase,
+	}
+
+	// INFO: Check if the insights should be updated
+	if homeAwayMetricsGen.ShouldUpdate(homeAwayMetricsGen.GetConfig()) {
+		homeAwayMetricsGen.GenerateAndSaveInsights(teaminsights.StatsMetaData(statMetadata))
+	} else {
+		fmt.Println("No time for update yet")
+	}
 
 }

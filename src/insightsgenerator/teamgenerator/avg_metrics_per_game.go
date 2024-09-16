@@ -6,18 +6,15 @@ import (
 	"sync"
 	"time"
 
-	"insights-pulse/src/dataclients"
 	"insights-pulse/src/models/insights/teaminsights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
 
 	"insights-pulse/src/logger"
-	"insights-pulse/src/repositories/sqlrepo"
 )
 
 type AvgMatchMetricsGenerator struct {
-	TeamClient *dataclients.TeamClient
-	TeamRepo   *sqlrepo.TeamRepository
+	InsightGeneratorBase
 }
 
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
@@ -30,40 +27,22 @@ func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 	}
 }
 
-func (a *AvgMatchMetricsGenerator) ShouldUpdate(config InsightConfig) bool {
-	lastUpdated, err := a.TeamRepo.GetLastUpdatedTime(config.TableName)
-	if err != nil {
-		logger.GetLogger().Error("Error getting last updated: " + err.Error())
-		return true
-	}
-	if lastUpdated.IsZero() {
-		return true
-
-	}
-	// Check if the last update was more than 7 days ago
-	if time.Since(lastUpdated) > config.UpdateFrequency {
-		return true
-	}
-	return false
-}
-
 func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.StatsMetaData) error {
 	// INFO: Step 1. Get fixture ids
 	fixtureIds := a.getFixtureIds(imeta.TeamId, imeta.Season, imeta.LeagueId)
-
 	idsChunks := utils.StringfyIds(fixtureIds, 20)
-
 	// INFO: Step 2. Get fixture stats
 	fixtureStats := a.getFixtureStats(idsChunks)
-
 	// INFO: Step 3. Generate stats details
 	statsDetails := a.calculateStatsDetails(fixtureStats, imeta.TeamId)
-
 	// INFO: Step 4. Save the insights
-	a.saveMetrics(imeta, statsDetails)
+	err := a.TeamRepo.SaveAvgInsightsPerGame(imeta, statsDetails)
+	if err != nil {
+		logger.GetLogger().Error("Error saving avg insights per game: " + err.Error())
+		return err
+	}
 
-	logger.GetLogger().Info(a.GetConfig().Type + " Saved successfully")
-
+	a.LogInfo(a.GetConfig(), imeta)
 	return nil
 }
 
@@ -247,16 +226,6 @@ func (a *AvgMatchMetricsGenerator) calculateStatsDetails(fixtureStats []response
 
 	return mapStatsToInsights(stats)
 
-}
-
-func (a *AvgMatchMetricsGenerator) saveMetrics(meta teaminsights.StatsMetaData, insights *teaminsights.MatchMetrics) error {
-	err := a.TeamRepo.SaveAvgInsightsPerGame(meta, insights)
-	if err != nil {
-		logger.GetLogger().Error("Error saving to db: " + err.Error())
-		return err
-	}
-
-	return nil
 }
 
 func calculateAverageStats(stats map[string]teaminsights.MatchStatsDetail) {
