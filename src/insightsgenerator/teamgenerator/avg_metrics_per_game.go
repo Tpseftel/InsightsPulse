@@ -20,14 +20,6 @@ type AvgMatchMetricsGenerator struct {
 	TeamRepo   *sqlrepo.TeamRepository
 }
 
-type InsightConfig struct {
-	Type            string
-	Api             string
-	Endpoints       []string
-	TableName       string
-	UpdateFrequency time.Duration
-}
-
 func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 	return InsightConfig{
 		Type:            "AvgMatchMetricsGenerator",

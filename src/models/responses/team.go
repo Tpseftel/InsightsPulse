@@ -28,6 +28,17 @@ type TeamFixturesIResponse struct {
 	} `json:"response"`
 }
 
+type HomeAwayData struct {
+	Home  interface{} `json:"home"`
+	Away  interface{} `json:"away"`
+	Total interface{} `json:"total"`
+}
+
+type MinuteData struct {
+	Total      interface{} `json:"total"`
+	Percentage interface{} `json:"percentage"`
+}
+
 // INFO: For endpoint: v3.football.api-sports.io/teams/statistics
 type TeamStatsResponse struct {
 	BasicInfoResponse
@@ -43,59 +54,21 @@ type TeamStatsResponse struct {
 		Team     `json:"team"`
 		Form     string `json:"form"`
 		Fixtures struct {
-			Played struct {
-				Home  int `json:"home"`
-				Away  int `json:"away"`
-				Total int `json:"total"`
-			} `json:"played"`
-			Wins struct {
-				Home  int `json:"home"`
-				Away  int `json:"away"`
-				Total int `json:"total"`
-			} `json:"wins"`
-			Draws struct {
-				Home  int `json:"home"`
-				Away  int `json:"away"`
-				Total int `json:"total"`
-			} `json:"draws"`
-			Loses struct {
-				Home  int `json:"home"`
-				Away  int `json:"away"`
-				Total int `json:"total"`
-			} `json:"loses"`
+			Played HomeAwayData `json:"played"`
+			Wins   HomeAwayData `json:"wins"`
+			Draws  HomeAwayData `json:"draws"`
+			Loses  HomeAwayData `json:"loses"`
 		} `json:"fixtures"`
 		Goals struct {
 			For struct {
-				Total struct {
-					Home  int `json:"home"`
-					Away  int `json:"away"`
-					Total int `json:"total"`
-				} `json:"total"`
-				Average struct {
-					Home  string `json:"home"`
-					Away  string `json:"away"`
-					Total string `json:"total"`
-				} `json:"average"`
-				Minute map[string]struct {
-					Total      int    `json:"total"`
-					Percentage string `json:"percentage"`
-				} `json:"minute"`
+				Total   HomeAwayData          `json:"total"`
+				Average HomeAwayData          `json:"average"`
+				Minute  map[string]MinuteData `json:"minute"`
 			} `json:"for"`
 			Against struct {
-				Total struct {
-					Home  int `json:"home"`
-					Away  int `json:"away"`
-					Total int `json:"total"`
-				} `json:"total"`
-				Average struct {
-					Home  string `json:"home"`
-					Away  string `json:"away"`
-					Total string `json:"total"`
-				} `json:"average"`
-				Minute map[string]struct {
-					Total      int    `json:"total"`
-					Percentage string `json:"percentage"`
-				} `json:"minute"`
+				Total   HomeAwayData          `json:"total"`
+				Average HomeAwayData          `json:"average"`
+				Minute  map[string]MinuteData `json:"minute"`
 			} `json:"against"`
 		} `json:"goals"`
 		Biggest struct {
@@ -104,14 +77,8 @@ type TeamStatsResponse struct {
 				Draws int `json:"draws"`
 				Loses int `json:"loses"`
 			} `json:"streak"`
-			Wins struct {
-				Home string `json:"home"`
-				Away string `json:"away"`
-			} `json:"wins"`
-			Loses struct {
-				Home string `json:"home"`
-				Away string `json:"away"`
-			} `json:"loses"`
+			Wins  HomeAwayData `json:"wins"`
+			Loses HomeAwayData `json:"loses"`
 			Goals struct {
 				For struct {
 					Home int `json:"home"`
@@ -123,20 +90,12 @@ type TeamStatsResponse struct {
 				} `json:"against"`
 			} `json:"goals"`
 		} `json:"biggest"`
-		CleanSheet struct {
-			Home  int `json:"home"`
-			Away  int `json:"away"`
-			Total int `json:"total"`
-		} `json:"clean_sheet"`
-		FailedToScore struct {
-			Home  int `json:"home"`
-			Away  int `json:"away"`
-			Total int `json:"total"`
-		} `json:"failed_to_score"`
-		Penalty struct {
+		CleanSheets   HomeAwayData `json:"clean_sheet"`
+		FailedToScore HomeAwayData `json:"failed_to_score"`
+		Penalty       struct {
 			Scored struct {
-				Total      int    `json:"total"`
-				Percentage string `json:"percentage"`
+				Total      interface{} `json:"total"`
+				Percentage interface{} `json:"percentage"`
 			} `json:"scored"`
 			Missed struct {
 				Total      int    `json:"total"`

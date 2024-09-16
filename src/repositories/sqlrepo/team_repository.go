@@ -80,6 +80,42 @@ func (repo *TeamRepository) SaveAvgInsightsPerGame(meta teaminsights.StatsMetaDa
 	return err
 }
 
+func (repo *TeamRepository) SaveHomeAwayMetrics(meta teaminsights.StatsMetaData, homeAwayMetrics *teaminsights.HomeAwayMetrics) error {
+	query := `
+		INSERT INTO home_away_metrics (
+			team_id, season, league_id, fixtures, wins, draws, loses, goals_for_total, goals_for_average, goals_for_minute, goals_against_total, goals_against_average, goals_against_minute, clean_sheets, failed_to_score, points_per_game
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+	stm, err := repo.Conn.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stm.Close()
+
+	// INFO: Serialize the struct fields to JSON
+	fixtures, _ := json.Marshal(homeAwayMetrics.Fixtures)
+	wins, _ := json.Marshal(homeAwayMetrics.Wins)
+	draws, _ := json.Marshal(homeAwayMetrics.Draws)
+	loses, _ := json.Marshal(homeAwayMetrics.Loses)
+	goalsForTotal, _ := json.Marshal(homeAwayMetrics.GoalsForTotal)
+	goalsForAverage, _ := json.Marshal(homeAwayMetrics.GoalsForAverage)
+	goalsForMinute, _ := json.Marshal(homeAwayMetrics.GoalsForMinute)
+	goalsAgainstTotal, _ := json.Marshal(homeAwayMetrics.GoalsAgainstTotal)
+	goalsAgainstAverage, _ := json.Marshal(homeAwayMetrics.GoalsAgainstAverage)
+	goalsAgainstMinute, _ := json.Marshal(homeAwayMetrics.GoalsAgainstMinute)
+	cleanSheets, _ := json.Marshal(homeAwayMetrics.CleanSheets)
+	failedToScore, _ := json.Marshal(homeAwayMetrics.FailedToScore)
+	pointsPerGame, _ := json.Marshal(homeAwayMetrics.PointsPerGame)
+
+	_, err = stm.Exec(meta.TeamId, meta.Season, meta.LeagueId, fixtures, wins, draws, loses, goalsForTotal, goalsForAverage, goalsForMinute, goalsAgainstTotal, goalsAgainstAverage, goalsAgainstMinute, cleanSheets, failedToScore, pointsPerGame)
+	if err != nil {
+		return err
+	}
+	logger.GetLogger().Info("Saved Home Away Metrics")
+	return err
+
+}
+
 func (repo *TeamRepository) GetLastUpdatedTime(tableName string) (time.Time, error) {
 	query := `
 		SELECT updated_at
@@ -109,6 +145,7 @@ func (repo *TeamRepository) GetLastUpdatedTime(tableName string) (time.Time, err
 	}
 
 	logger.GetLogger().Info(fmt.Sprintf("Table: %s, Last Updated Time: %s", tableName, updateTime))
+
 	return updateTime, nil
 
 }

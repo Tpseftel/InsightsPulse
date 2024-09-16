@@ -86,4 +86,31 @@ func createTables() {
 	}
 	log.Info("Table avg_insights_per_game_team created successfully")
 
+	homeAwayMetrics := `CREATE TABLE IF NOT EXISTS home_away_metrics (
+		team_id VARCHAR(255),
+		season VARCHAR(255),
+		league_id VARCHAR(255),
+		fixtures JSON,
+		wins JSON,
+		draws JSON,
+		loses JSON,
+		goals_for_total JSON,
+		goals_for_average JSON,
+		goals_for_minute JSON,
+		goals_against_total JSON,
+		goals_against_average JSON,
+		goals_against_minute JSON,
+		clean_sheets JSON,
+		failed_to_score JSON,
+		points_per_game JSON,
+		PRIMARY KEY (team_id, season, league_id),
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	);`
+	_, err = DB.Exec(homeAwayMetrics)
+	if err != nil {
+		log.Error("Create table Error: " + err.Error())
+		panic(err)
+	}
+	log.Info("Table home_away_metrics created successfully")
 }
