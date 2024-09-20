@@ -1,6 +1,7 @@
 package teamgenerator
 
 import (
+	"errors"
 	"math"
 	"strconv"
 	"sync"
@@ -23,18 +24,27 @@ func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 		TableName:       "avg_insights_per_game_team",
 		Api:             "https://v3.football.api-sports.io",
 		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
-		UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
+		UpdateFrequency: 7 * 24 * time.Second, //  Weekly update
 	}
 }
 
 func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.StatsMetaData) error {
 	// INFO: Step 1. Get fixture ids
 	fixtureIds := a.getFixtureIds(imeta.TeamId, imeta.Season, imeta.LeagueId)
+	if len(fixtureIds) == 0 {
+		return errors.New("something went wrong while fetching fixture ids")
+	}
+
 	idsChunks := utils.StringfyIds(fixtureIds, 20)
 	// INFO: Step 2. Get fixture stats
 	fixtureStats := a.getFixtureStats(idsChunks)
+	if len(fixtureStats) == 0 {
+		return errors.New("something went wrong while fetching fixture stats")
+	}
+
 	// INFO: Step 3. Generate stats details
 	statsDetails := a.calculateStatsDetails(fixtureStats, imeta.TeamId)
+
 	// INFO: Step 4. Save the insights
 	err := a.TeamRepo.SaveAvgInsightsPerGame(imeta, statsDetails)
 	if err != nil {

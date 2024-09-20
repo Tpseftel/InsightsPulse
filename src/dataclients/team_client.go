@@ -83,6 +83,7 @@ func (c *TeamClient) GetFixtures(teamId, leagueId, season string) []int {
 	err = json.Unmarshal(resp.Body(), &dataResponse)
 	if err != nil {
 		logger.GetLogger().Warn(err.Error())
+		return []int{}
 	}
 
 	if dataResponse.Results == 0 {

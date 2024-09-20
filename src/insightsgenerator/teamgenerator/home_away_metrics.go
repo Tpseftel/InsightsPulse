@@ -1,6 +1,7 @@
 package teamgenerator
 
 import (
+	"errors"
 	"insights-pulse/src/models/insights/teaminsights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
@@ -17,7 +18,7 @@ func (h *HomeAwayMetricsGenerator) GetConfig() InsightConfig {
 		TableName:       "home_away_metrics",
 		Api:             "https://v3.football.api-sports.io",
 		Endpoints:       []string{"/teams/statistics"},
-		UpdateFrequency: 7 * 24 * time.Hour, //  Weekly update
+		UpdateFrequency: 7 * 24 * time.Second, // S
 	}
 }
 
@@ -25,6 +26,9 @@ func (h *HomeAwayMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.St
 
 	// INFO: Step 1. Get Season statistics
 	resp := h.TeamClient.GetTeamSeasonStats(imeta.TeamId, imeta.LeagueId, imeta.Season)
+	if resp == nil {
+		return errors.New("something went wrong while fetching GetTeamSeasonStats")
+	}
 	// INFO: Step 2. Parse to HomeAwayMetrics and calculate Points
 	homeAwayMetrics := h.parseToHomeAwayMetrics(resp)
 	// INFO: Step 3. Save to Database
