@@ -56,6 +56,6 @@ func (i *InsightGeneratorBase) ShouldUpdate(config InsightConfig) bool {
 
 func (i *InsightGeneratorBase) LogInfo(config InsightConfig, imeta teaminsights.StatsMetaData) {
 	logger.GetLogger().Info(config.Type + " : Successfully run")
-	logger.GetLogger().Info(utils.ConvToString(imeta))
+	logger.GetLogger().Info(utils.StructToString(imeta))
 	logger.GetLogger().Info(utils.StructToString(config))
 }

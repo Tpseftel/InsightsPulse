@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	TIMEOUT = 10 * time.Second
+	TIMEOUT = 60 * time.Second
 )
 
 type ApiFootballClient struct {

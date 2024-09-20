@@ -1,7 +1,9 @@
 package dataclients
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"insights-pulse/src/apiclients"
 
@@ -27,20 +29,27 @@ func (c *TeamClient) GetTeamSeasonStats(teamId, leagueId, season string) *respon
 		"season": season,
 		"league": leagueId,
 	}
-	var dataResponse responses.TeamStatsResponse
 
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetResult(&dataResponse).
 		SetQueryParams(queryParams).
 		Get(endpoint)
+
 	if err != nil {
 		log.Warn(err.Error())
 		return nil
 	}
+
 	if resp.IsError() {
 		log.Warn(errors.New("api responde with error status code >=400").Error())
 		return nil
+	}
+
+	// Unmarshal the response body to the response struct
+	var dataResponse responses.TeamStatsResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		fmt.Println("Error in unmarshalling", err.Error())
 	}
 
 	return &dataResponse
@@ -54,10 +63,8 @@ func (c *TeamClient) GetFixtures(teamId, leagueId, season string) []int {
 		"league": leagueId,
 	}
 
-	var dataResponse responses.TeamFixturesIResponse
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetResult(&dataResponse).
 		SetQueryParams(queryParams).
 		Get(endpoint)
 	if err != nil {
@@ -68,6 +75,14 @@ func (c *TeamClient) GetFixtures(teamId, leagueId, season string) []int {
 	if resp.IsError() {
 		log.Warn("endpoint: " + endpoint + "\n api responde with error status code >=400")
 		return []int{}
+	}
+
+	// Unmarshal the response body to the response struct
+
+	var dataResponse responses.TeamFixturesIResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
 	}
 
 	if dataResponse.Results == 0 {
@@ -88,10 +103,8 @@ func (c *TeamClient) GetFixturebyId(fixtureId string) *responses.FixtureStatsRes
 	queryParams := map[string]string{
 		"id": fixtureId,
 	}
-	var dataResponse responses.FixtureStatsResponse
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetResult(&dataResponse).
 		SetQueryParams(queryParams).
 		Get(endpoint)
 	if err != nil {
@@ -101,6 +114,13 @@ func (c *TeamClient) GetFixturebyId(fixtureId string) *responses.FixtureStatsRes
 
 	if resp.IsError() {
 		log.Warn("endpoint: " + endpoint + "\n api responde with error status code >=400")
+		return nil
+	}
+
+	var dataResponse responses.FixtureStatsResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
 		return nil
 	}
 
@@ -120,10 +140,8 @@ func (c *TeamClient) GetFixturebyIds(stringIds string) *responses.FixtureStatsRe
 	queryParams := map[string]string{
 		"ids": stringIds, // "3442-4124-43243"
 	}
-	var dataResponse responses.FixtureStatsResponse
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetResult(&dataResponse).
 		SetQueryParams(queryParams).
 		Get(endpoint)
 	if err != nil {
@@ -136,6 +154,12 @@ func (c *TeamClient) GetFixturebyIds(stringIds string) *responses.FixtureStatsRe
 		return nil
 	}
 
+	var dataResponse responses.FixtureStatsResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
+		return nil
+	}
 	if dataResponse.Results == 0 {
 		log.Warn("endpoint: " + endpoint + "\n no results")
 		return nil
@@ -150,11 +174,9 @@ func (c *TeamClient) GetFixtureStats(teamId, fixtureId string) *responses.Fixtur
 		"fixture": fixtureId,
 		"team":    teamId,
 	}
-	var dataResponse responses.FixtureTeamStatsResponse
 
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetResult(&dataResponse).
 		SetQueryParams(queryParams).
 		Get(endpoint)
 	if err != nil {
@@ -165,5 +187,12 @@ func (c *TeamClient) GetFixtureStats(teamId, fixtureId string) *responses.Fixtur
 		log.Warn(errors.New("api responde with error status code >=400").Error())
 		return nil
 	}
+	var dataResponse responses.FixtureTeamStatsResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
+		return nil
+	}
+
 	return &dataResponse
 }
