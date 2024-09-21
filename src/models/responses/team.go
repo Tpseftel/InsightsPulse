@@ -175,3 +175,29 @@ type FixtureStatsResponse struct {
 		}
 	} `json:"response"`
 }
+
+type TeamDetails struct {
+	Team struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name"`
+		Code     string `json:"code"`
+		Country  string `json:"country"`
+		Founded  int    `json:"founded"`
+		National bool   `json:"national"`
+		Logo     string `json:"logo"`
+	} `json:"team"`
+	Venue struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name"`
+		Address  string `json:"address"`
+		City     string `json:"city"`
+		Capacity int    `json:"capacity"`
+		Surface  string `json:"surface"`
+		Image    string `json:"image"`
+	} `json:"venue"`
+}
+
+type TeamResponse struct {
+	BasicInfoResponse
+	Response []TeamDetails `json:"response"`
+}

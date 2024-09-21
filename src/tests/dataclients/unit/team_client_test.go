@@ -748,3 +748,127 @@ func TestGetFixtureStats(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTeams(t *testing.T) {
+	tests := []struct {
+		name            string
+		expectError     bool
+		leagueId        string
+		season          string
+		expectedResults int
+		expectedTeamId  int
+		expectedVenueId int
+		mockedResponse  string
+	}{
+		{
+			name:            "Valid response",
+			expectError:     false,
+			leagueId:        "39", // Premien League
+			season:          "2023",
+			expectedResults: 20,
+			expectedTeamId:  33,
+			expectedVenueId: 556,
+			mockedResponse: `{
+                "get": "teams",
+                "parameters": {
+                    "league": "39",
+                    "season": "2023"
+                },
+                "errors": [],
+                "results": 20,
+                "paging": {
+                    "current": 1,
+                    "total": 1
+                },
+                "response": [
+                    {
+                        "team": {
+                            "id": 33,
+                            "name": "Manchester United",
+                            "code": "MUN",
+                            "country": "England",
+                            "founded": 1878,
+                            "national": false,
+                            "logo": "https://media.api-sports.io/football/teams/33.png"
+                        },
+                        "venue": {
+                            "id": 556,
+                            "name": "Old Trafford",
+                            "address": "Sir Matt Busby Way",
+                            "city": "Manchester",
+                            "capacity": 76212,
+                            "surface": "grass",
+                            "image": "https://media.api-sports.io/football/venues/556.png"
+                        }
+                    },
+                    {
+                        "team": {
+                            "id": 34,
+                            "name": "Newcastle",
+                            "code": "NEW",
+                            "country": "England",
+                            "founded": 1892,
+                            "national": false,
+                            "logo": "https://media.api-sports.io/football/teams/34.png"
+                        },
+                        "venue": {
+                            "id": 562,
+                            "name": "St. James' Park",
+                            "address": "St. James&apos; Street",
+                            "city": "Newcastle upon Tyne",
+                            "capacity": 52758,
+                            "surface": "grass",
+                            "image": "https://media.api-sports.io/football/venues/562.png"
+                        }
+                    }
+                ]
+            }`,
+		},
+		{
+			name:            "Empty response - Season with no data coverage",
+			leagueId:        "39",
+			expectError:     true,
+			season:          "1990",
+			expectedResults: 0,
+			expectedTeamId:  0,
+			expectedVenueId: 0,
+			mockedResponse: `{
+                "get": "teams",
+                "parameters": {
+                    "league": "39",
+                    "season": "1990"
+                },
+                "errors": [],
+                "results": 0,
+                "paging": {
+                    "current": 1,
+                    "total": 1
+                },
+                "response": []
+            }`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create the mock API client with the mocked response
+			mockApiClient := mocks.NewMockApiClient(tt.mockedResponse, nil, true)
+			// Create a new instance of the team client with the mock client
+			teamClient := dataclients.NewTeamClient(mockApiClient)
+
+			// INFO: Call the GetTeams method
+			result := teamClient.GetTeams(tt.leagueId, tt.season)
+
+			if tt.expectError {
+				assert.Empty(t, result.Response)
+				assert.Equal(t, tt.expectedResults, result.Results)
+				assert.Empty(t, tt.expectedTeamId, result.Response)
+			} else {
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.expectedResults, result.Results)
+				assert.Equal(t, tt.expectedTeamId, result.Response[0].Team.ID)
+				assert.Equal(t, tt.expectedVenueId, result.Response[0].Venue.ID)
+			}
+		})
+	}
+}

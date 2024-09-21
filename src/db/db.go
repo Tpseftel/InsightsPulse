@@ -19,7 +19,7 @@ func InitDb() {
 
 	config, err := config.GetConfig()
 	if err != nil {
-		log.Error("Cannot load Configuration variables: " + err.Error())
+		logger.GetLogger().Error("Cannot load Configuration variables: " + err.Error())
 		panic(err)
 	}
 	user := config.User
