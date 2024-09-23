@@ -46,6 +46,8 @@ func (c *TeamClient) GetTeamSeasonStats(teamId, leagueId, season string) *respon
 	err = json.Unmarshal(resp.Body(), &dataResponse)
 	if err != nil {
 		logger.GetLogger().Warn(err.Error())
+		logger.GetLogger().Warn(resp.String())
+
 		return nil
 	}
 
