@@ -1,6 +1,7 @@
 package apiclients
 
 import (
+	"fmt"
 	"time"
 
 	"insights-pulse/src/config"
@@ -10,7 +11,11 @@ import (
 )
 
 const (
-	TIMEOUT = 60 * time.Second
+	TIMEOUT                       = 60 * time.Second
+	MINUTELY_LIMIT                = "X-RateLimit-Limit"
+	REMAINING_REQUESTS_PER_MINUTE = "X-RateLimit-Remaining"
+	DAILY_LIMIT                   = "x-ratelimit-requests-limit"
+	REMAINING_REQUESTS_PER_DAY    = "x-ratelimit-requests-remaining"
 )
 
 type ApiFootballClient struct {
@@ -41,7 +46,6 @@ func (c *ApiFootballClient) GetClient() *resty.Client {
 }
 
 func (c *ApiFootballClient) IsClientOk() bool {
-	log := logger.GetLogger()
 	endpoint := "/status"
 
 	resp, err := c.client.R().
@@ -50,15 +54,33 @@ func (c *ApiFootballClient) IsClientOk() bool {
 		return false
 	}
 	if resp.IsError() {
-		log.Warn("api respose code is >=400")
+		logger.GetLogger().Warn("api respose code is >=400")
 		return false
 	}
 
 	return resp.StatusCode() == 200
 }
 
-// TODO: Implement me
-func (c *ApiFootballClient) HasClientAvailableRequests() bool {
-	// INFO: Get date from status request responce
-	return true
+func (c *ApiFootballClient) CheckRequestsLimits(resp *resty.Response) {
+	if !hasAvailableRequestsMinutely(resp) {
+		fmt.Println("Header feedback:Go for sleep")
+		logger.GetLogger().Info("Maximum Requests per minute reached: Going for sleep!!")
+		time.Sleep(1 * time.Minute)
+	}
+	if !hastAvailableRequestsDaily(resp) {
+		panic("Daily requests limit reached!!!")
+	}
+
+}
+
+func hasAvailableRequestsMinutely(resp *resty.Response) bool {
+	limit := resp.Header().Get(REMAINING_REQUESTS_PER_MINUTE)
+	fmt.Printf("Minute Remaining: %v, Type: %T \n ", limit, limit)
+	return limit != "0"
+}
+
+func hastAvailableRequestsDaily(resp *resty.Response) bool {
+	limit := resp.Header().Get(REMAINING_REQUESTS_PER_DAY)
+	fmt.Printf("Day Remaining: %v, Type: %T \n ", limit, limit)
+	return limit != "0"
 }

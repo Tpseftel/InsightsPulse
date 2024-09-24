@@ -50,7 +50,7 @@ func (c *TeamClient) GetTeamSeasonStats(teamId, leagueId, season string) *respon
 
 		return nil
 	}
-
+	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
 }
 
@@ -92,7 +92,7 @@ func (c *TeamClient) GetFixtures(teamId, leagueId, season string) []int {
 	for _, v := range dataResponse.Response {
 		fixturesIds = append(fixturesIds, v.Fixture.ID)
 	}
-
+	c.apiClient.CheckRequestsLimits(resp)
 	return fixturesIds
 }
 
@@ -126,7 +126,7 @@ func (c *TeamClient) GetFixturebyId(fixtureId string) *responses.FixtureStatsRes
 		logger.GetLogger().Warn("endpoint: " + endpoint + "\n no results")
 		return nil
 	}
-
+	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
 }
 
@@ -162,7 +162,7 @@ func (c *TeamClient) GetFixturebyIds(stringIds string) *responses.FixtureStatsRe
 		logger.GetLogger().Warn("endpoint: " + endpoint + "\n no results")
 		return nil
 	}
-
+	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
 }
 
@@ -192,6 +192,7 @@ func (c *TeamClient) GetFixtureStats(teamId, fixtureId string) *responses.Fixtur
 		return nil
 	}
 
+	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
 }
 
@@ -221,6 +222,7 @@ func (c *TeamClient) GetTeams(leagueId, season string) *responses.TeamResponse {
 		return nil
 	}
 
+	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
 
 }

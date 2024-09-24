@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -12,6 +13,10 @@ import (
 type MockApiClient struct {
 	restyClient *resty.Client
 	isClientOk  bool
+}
+
+func (m *MockApiClient) CheckRequestsLimits(resp *resty.Response) {
+	fmt.Println("Check requests limits via request Headers")
 }
 
 // Custom RoundTripper to mock HTTP responses
