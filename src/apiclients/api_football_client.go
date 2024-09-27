@@ -75,12 +75,12 @@ func (c *ApiFootballClient) CheckRequestsLimits(resp *resty.Response) {
 
 func hasAvailableRequestsMinutely(resp *resty.Response) bool {
 	limit := resp.Header().Get(REMAINING_REQUESTS_PER_MINUTE)
-	fmt.Printf("Minute Remaining: %v, Type: %T \n ", limit, limit)
+	fmt.Printf("Minute Remaining: %v", limit)
 	return limit != "0"
 }
 
 func hastAvailableRequestsDaily(resp *resty.Response) bool {
 	limit := resp.Header().Get(REMAINING_REQUESTS_PER_DAY)
-	fmt.Printf("Day Remaining: %v, Type: %T \n ", limit, limit)
+	fmt.Printf("Day Remaining: %v", limit)
 	return limit != "0"
 }

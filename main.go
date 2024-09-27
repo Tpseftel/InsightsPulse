@@ -29,13 +29,32 @@ func main() {
 
 	var insigeneratorBase *teamgenerator.InsightGeneratorBase = teamgenerator.NewInsightGeneratorBase(teamClient, teamRepo)
 
+	// INFO: Initialize the insight generators
 	var homeAwayMetricsGen teamgenerator.InsightsGenerator = &teamgenerator.HomeAwayMetricsGenerator{
 		InsightGeneratorBase: insigeneratorBase,
 	}
+	var avgSeasonMetricsGen teamgenerator.InsightsGenerator = &teamgenerator.AvgMatchMetricsGenerator{
+		InsightGeneratorBase: insigeneratorBase,
+	}
+
 	var leagueCollector *collectors.LeagueCollector = &collectors.LeagueCollector{
 		TeamClient: teamClient,
 		Config:     config,
 	}
 
-	leagueCollector.CollectLeagueData(con.PREMIER_LEAGUE, "2023", homeAwayMetricsGen)
+	// =========== INFO: For Current Season 2024 Home Away Metricss ============
+	leagueCollector.CollectLeagueData(con.PREMIER_LEAGUE, "2024", homeAwayMetricsGen)
+	// leagueCollector.CollectLeagueData(con.SUPER_LEAGUE, "2024", homeAwayMetricsGen)
+	// leagueCollector.CollectLeagueData(con.LA_LIGA, "2024", homeAwayMetricsGen)
+	// leagueCollector.CollectLeagueData(con.SERIE_A, "2024", homeAwayMetricsGen)
+	// leagueCollector.CollectLeagueData(con.BUNDESLIGA, "2024", homeAwayMetricsGen)
+	// leagueCollector.CollectLeagueData(con.LEAGUE_ONE, "2024", homeAwayMetricsGen)
+
+	//  ============ INFO: For Current Season 2024 Average Season Metrics ============
+	leagueCollector.CollectLeagueData(con.PREMIER_LEAGUE, "2024", avgSeasonMetricsGen)
+	// leagueCollector.CollectLeagueData(con.SUPER_LEAGUE, "2024", avgSeasonMetricsGen)
+	// leagueCollector.CollectLeagueData(con.LA_LIGA, "2024", avgSeasonMetricsGen)
+	// leagueCollector.CollectLeagueData(con.SERIE_A, "2024", avgSeasonMetricsGen)
+	// leagueCollector.CollectLeagueData(con.BUNDESLIGA, "2024", avgSeasonMetricsGen)
+	// leagueCollector.CollectLeagueData(con.LEAGUE_ONE, "2024", avgSeasonMetricsGen)
 }

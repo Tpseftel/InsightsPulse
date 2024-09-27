@@ -27,7 +27,7 @@ func (tc *LeagueCollector) CollectLeagueData(leagueId, season string, insight te
 	for _, team := range plTeams.Response {
 		statMetadata := teaminsights.StatsMetaData{
 			TeamId:   fmt.Sprintf("%d", team.Team.ID),
-			Season:   "2023",
+			Season:   season,
 			LeagueId: leagueId,
 		}
 
