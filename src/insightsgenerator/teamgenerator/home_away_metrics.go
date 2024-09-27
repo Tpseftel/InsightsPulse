@@ -24,8 +24,13 @@ func (h *HomeAwayMetricsGenerator) GetConfig() InsightConfig {
 
 func (h *HomeAwayMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.StatsMetaData) error {
 
+	params := dataclients.QueryParameters{
+		TeamId:   imeta.TeamId,
+		LeagueId: imeta.LeagueId,
+		Season:   imeta.Season,
+	}
 	// INFO: Step 1. Get Season statistics
-	resp := h.TeamClient.GetTeamSeasonStats(imeta.TeamId, imeta.LeagueId, imeta.Season)
+	resp := h.TeamClient.GetTeamSeasonStats(params)
 	if resp == nil {
 		return errors.New("something went wrong while fetching GetTeamSeasonStats")
 	}

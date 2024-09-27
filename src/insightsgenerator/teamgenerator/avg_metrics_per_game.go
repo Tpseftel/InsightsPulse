@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"insights-pulse/src/dataclients"
 	"insights-pulse/src/models/insights/teaminsights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
@@ -24,7 +25,7 @@ func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 		TableName:       "avg_insights_per_game_team",
 		Api:             "https://v3.football.api-sports.io",
 		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
-		UpdateFrequency: 7 * 24 * time.Second, //  Weekly update
+		UpdateFrequency: 0 * 24 * time.Second, //  Weekly update
 	}
 }
 
@@ -57,7 +58,12 @@ func (a *AvgMatchMetricsGenerator) GenerateAndSaveInsights(imeta teaminsights.St
 }
 
 func (a *AvgMatchMetricsGenerator) getFixtureIds(teamId, season, league string) []int {
-	fixtureIds := a.TeamClient.GetFixtures(teamId, league, season)
+	params := dataclients.QueryParameters{
+		TeamId:   teamId,
+		Season:   season,
+		LeagueId: league,
+	}
+	fixtureIds := a.TeamClient.GetFixtures(params)
 	return fixtureIds
 }
 

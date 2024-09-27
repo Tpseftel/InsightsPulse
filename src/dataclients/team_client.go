@@ -14,16 +14,27 @@ type TeamClient struct {
 	apiClient apiclients.ApiClient
 }
 
+type QueryParameters struct {
+	TeamId   string
+	LeagueId string
+	Season   string
+	Date     string
+}
+
 func NewTeamClient(apiClient apiclients.ApiClient) *TeamClient {
 	return &TeamClient{apiClient}
 }
 
-func (c *TeamClient) GetTeamSeasonStats(teamId, leagueId, season string) *responses.TeamStatsResponse {
+func (c *TeamClient) GetTeamSeasonStats(params QueryParameters) *responses.TeamStatsResponse {
 	endpoint := "/teams/statistics"
 	queryParams := map[string]string{
-		"team":   teamId,
-		"season": season,
-		"league": leagueId,
+		"team":   params.TeamId,
+		"season": params.Season,
+		"league": params.LeagueId,
+	}
+
+	if params.Date != "" {
+		queryParams["date"] = params.Date
 	}
 
 	resp, err := c.apiClient.GetClient().
@@ -54,17 +65,22 @@ func (c *TeamClient) GetTeamSeasonStats(teamId, leagueId, season string) *respon
 	return &dataResponse
 }
 
-func (c *TeamClient) GetFixtures(teamId, leagueId, season string) []int {
+func (c *TeamClient) GetFixtures(params QueryParameters) []int {
 	endpoint := "/fixtures"
-	queryParams := map[string]string{
-		"team":   teamId,
-		"season": season,
-		"league": leagueId,
+
+	queryParameters := map[string]string{
+		"team":   params.TeamId,
+		"season": params.Season,
+		"league": params.LeagueId,
+	}
+
+	if params.Date != "" {
+		queryParameters["date"] = params.Date
 	}
 
 	resp, err := c.apiClient.GetClient().
 		R().
-		SetQueryParams(queryParams).
+		SetQueryParams(queryParameters).
 		Get(endpoint)
 	if err != nil {
 		logger.GetLogger().Warn(err.Error())
@@ -224,5 +240,4 @@ func (c *TeamClient) GetTeams(leagueId, season string) *responses.TeamResponse {
 
 	c.apiClient.CheckRequestsLimits(resp)
 	return &dataResponse
-
 }

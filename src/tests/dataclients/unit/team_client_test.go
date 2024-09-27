@@ -146,8 +146,14 @@ func TestGetTeamSeasonStats(t *testing.T) {
 			// Create a new instance of the team client with the mock client
 			teamClient := dataclients.NewTeamClient(mockApiClient)
 
+			params := dataclients.QueryParameters{
+				TeamId:   tt.statsMetadata["teamId"],
+				LeagueId: tt.statsMetadata["leagueId"],
+				Season:   tt.statsMetadata["season"],
+			}
+
 			// INFO: Call the function being tested
-			result := teamClient.GetTeamSeasonStats(tt.statsMetadata["teamId"], tt.statsMetadata["leagueId"], tt.statsMetadata["season"])
+			result := teamClient.GetTeamSeasonStats(params)
 
 			if tt.expectError {
 				assert.Empty(t, result.Response)
@@ -354,8 +360,14 @@ func TestGetFixtures(t *testing.T) {
 			// Create a new instance of the team client with the mock client
 			teamClient := dataclients.NewTeamClient(mockApiClient)
 
+			params := dataclients.QueryParameters{
+				TeamId:   tt.statsMetadata["teamId"],
+				LeagueId: tt.statsMetadata["leagueId"],
+				Season:   tt.statsMetadata["season"],
+			}
+
 			// INFO: Call the function being tested
-			result := teamClient.GetFixtures(tt.statsMetadata["teamId"], tt.statsMetadata["leagueId"], tt.statsMetadata["season"])
+			result := teamClient.GetFixtures(params)
 
 			if tt.expectError {
 				assert.Empty(t, result)
