@@ -18,28 +18,26 @@ func (tc *LeagueCollector) CollectLeagueData(leagueId, season string, insight te
 
 	// INFO: Batching related data for the API
 
-	plTeams := tc.TeamClient.GetTeams(leagueId, season)
-	if plTeams == nil {
+	teams := tc.TeamClient.GetTeams(leagueId, season)
+	if teams == nil {
 		logger.GetLogger().Warn(fmt.Sprintf("No teams found for league %s", leagueId))
 		return
 	}
-
-	for _, team := range plTeams.Response {
+	if !insight.ShouldUpdate(insight.GetConfig(), leagueId) {
+		fmt.Println("No time for update yet")
+		logger.GetLogger().Warn(fmt.Sprintf("No time for update yet for insight %v", insight.GetConfig().Type))
+		return
+	}
+	for _, team := range teams.Response {
 		statMetadata := teaminsights.StatsMetaData{
 			TeamId:   fmt.Sprintf("%d", team.Team.ID),
 			Season:   season,
 			LeagueId: leagueId,
 		}
-
-		if insight.ShouldUpdate(insight.GetConfig()) {
-			err := insight.GenerateAndSaveInsights(statMetadata)
-			if err != nil {
-				logger.GetLogger().Error(fmt.Sprintf("Error saving insights for team: %v \n League: %v  \n Season: %v",
-					statMetadata.TeamId, statMetadata.LeagueId, statMetadata.Season))
-			}
-		} else {
-			fmt.Println("No time for update yet")
-			logger.GetLogger().Info(fmt.Sprintf("No time for update yet for team %v", statMetadata.TeamId))
+		err := insight.GenerateAndSaveInsights(statMetadata)
+		if err != nil {
+			logger.GetLogger().Error(fmt.Sprintf("Error saving insights for team: %v \n League: %v  \n Season: %v",
+				statMetadata.TeamId, statMetadata.LeagueId, statMetadata.Season))
 		}
 	}
 

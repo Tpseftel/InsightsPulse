@@ -2,6 +2,7 @@ package teamgenerator
 
 import (
 	"errors"
+	"insights-pulse/src/dataclients"
 	"insights-pulse/src/models/insights/teaminsights"
 	"insights-pulse/src/models/responses"
 	"insights-pulse/src/utils"
@@ -18,7 +19,7 @@ func (h *HomeAwayMetricsGenerator) GetConfig() InsightConfig {
 		TableName:       "home_away_metrics",
 		Api:             "https://v3.football.api-sports.io",
 		Endpoints:       []string{"/teams/statistics"},
-		UpdateFrequency: 7 * 24 * time.Hour, //
+		UpdateFrequency: 55 * time.Minute, //
 	}
 }
 

@@ -116,12 +116,11 @@ func (repo *TeamRepository) SaveHomeAwayMetrics(meta teaminsights.StatsMetaData,
 
 }
 
-func (repo *TeamRepository) GetLastUpdatedTime(tableName string) (time.Time, error) {
+func (repo *TeamRepository) GetLastUpdatedTime(tableName, leaugeId string) (time.Time, error) {
 	query := `
-		SELECT updated_at
+		SELECT Max(updated_at) as last_updated
 		FROM ` + tableName + `
-		ORDER BY updated_at DESC
-		LIMIT 1
+		WHERE league_id = '` + leaugeId + `'
 	`
 	var updateTimeBytes []byte
 	err := repo.Conn.QueryRow(query).Scan(&updateTimeBytes)

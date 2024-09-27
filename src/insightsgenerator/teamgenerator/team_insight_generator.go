@@ -12,7 +12,7 @@ import (
 type InsightsGenerator interface {
 	GenerateAndSaveInsights(imeta teaminsights.StatsMetaData) error
 	GetConfig() InsightConfig
-	ShouldUpdate(config InsightConfig) bool
+	ShouldUpdate(config InsightConfig, leagueId string) bool
 }
 
 // INFO: Config for the insights generator
@@ -34,9 +34,9 @@ func NewInsightGeneratorBase(teamClient *dataclients.TeamClient, teamRepo *sqlre
 	return &InsightGeneratorBase{teamClient, teamRepo}
 }
 
-func (i *InsightGeneratorBase) ShouldUpdate(config InsightConfig) bool {
+func (i *InsightGeneratorBase) ShouldUpdate(config InsightConfig, leagueId string) bool {
 	{
-		lastUpdated, err := i.TeamRepo.GetLastUpdatedTime(config.TableName)
+		lastUpdated, err := i.TeamRepo.GetLastUpdatedTime(config.TableName, leagueId)
 		if err != nil {
 			logger.GetLogger().Error("Error getting last updated: " + err.Error())
 			return true
@@ -46,11 +46,7 @@ func (i *InsightGeneratorBase) ShouldUpdate(config InsightConfig) bool {
 
 		}
 
-		if time.Since(lastUpdated) > config.UpdateFrequency {
-			return true
-		}
-		return false
-
+		return time.Since(lastUpdated) > config.UpdateFrequency
 	}
 }
 

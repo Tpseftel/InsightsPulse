@@ -25,7 +25,7 @@ func (a *AvgMatchMetricsGenerator) GetConfig() InsightConfig {
 		TableName:       "avg_insights_per_game_team",
 		Api:             "https://v3.football.api-sports.io",
 		Endpoints:       []string{"/fixtures?team=33&league=39&season=2020"},
-		UpdateFrequency: 0 * 24 * time.Second, //  Weekly update
+		UpdateFrequency: 55 * time.Minute, //  Weekly update
 	}
 }
 
