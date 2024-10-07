@@ -65,6 +65,37 @@ func (c *TeamClient) GetTeamSeasonStats(params QueryParameters) *responses.TeamS
 	return &dataResponse
 }
 
+func (c *TeamClient) GetLeagueTeamsInfo(leagueId, season string) *responses.TeamsInfoResponse {
+	endpoint := "/teams"
+	queryParams := map[string]string{
+		"league": leagueId,
+		"season": season,
+	}
+
+	resp, err := c.apiClient.GetClient().
+		R().
+		SetQueryParams(queryParams).
+		Get(endpoint)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
+		return nil
+	}
+
+	if resp.IsError() {
+		logger.GetLogger().Warn(errors.New("api responde with error status code >=400").Error())
+		return nil
+	}
+
+	var dataResponse responses.TeamsInfoResponse
+	err = json.Unmarshal(resp.Body(), &dataResponse)
+	if err != nil {
+		logger.GetLogger().Warn(err.Error())
+		return nil
+	}
+	c.apiClient.CheckRequestsLimits(resp)
+	return &dataResponse
+}
+
 func (c *TeamClient) GetFixtures(params QueryParameters) []int {
 	endpoint := "/fixtures"
 
@@ -212,7 +243,7 @@ func (c *TeamClient) GetFixtureStats(teamId, fixtureId string) *responses.Fixtur
 	return &dataResponse
 }
 
-func (c *TeamClient) GetTeams(leagueId, season string) *responses.TeamResponse {
+func (c *TeamClient) GetTeams(leagueId, season string) *responses.TeamsInfoResponse {
 	endpoint := "/teams"
 	queryParams := map[string]string{
 		"league": leagueId,
@@ -231,7 +262,7 @@ func (c *TeamClient) GetTeams(leagueId, season string) *responses.TeamResponse {
 		logger.GetLogger().Warn(errors.New("api responde with error status code >=400").Error())
 		return nil
 	}
-	var dataResponse responses.TeamResponse
+	var dataResponse responses.TeamsInfoResponse
 	err = json.Unmarshal(resp.Body(), &dataResponse)
 	if err != nil {
 		logger.GetLogger().Warn(err.Error())

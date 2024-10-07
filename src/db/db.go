@@ -53,6 +53,32 @@ func InitDb() {
 }
 
 func createTables() {
+
+	// Teams Table
+	teamsTable := `CREATE TABLE IF NOT EXISTS teams (
+		id INT PRIMARY KEY,
+		name VARCHAR(255),
+		code VARCHAR(255),
+		country VARCHAR(255),
+		founded INT,
+		national BOOLEAN,
+		logo VARCHAR(255),
+		venue_id INT,
+		venue_name VARCHAR(255),
+		venue_surface VARCHAR(255),
+		venue_address VARCHAR(255),
+		venue_city VARCHAR(255),
+		venue_capacity INT,
+		venue_image VARCHAR(255),
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	);`
+	_, err := DB.Exec(teamsTable)
+	if err != nil {
+		log.Error("Create table Error: " + err.Error())
+		panic(err)
+	}
+
 	// Insights Tables
 	avgInsightsPerGameTeam := `CREATE TABLE IF NOT EXISTS avg_insights_per_game_team (
 		team_id VARCHAR(255),
@@ -79,7 +105,7 @@ func createTables() {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 	);`
-	_, err := DB.Exec(avgInsightsPerGameTeam)
+	_, err = DB.Exec(avgInsightsPerGameTeam)
 	if err != nil {
 		log.Error("Create table Error: " + err.Error())
 		panic(err)

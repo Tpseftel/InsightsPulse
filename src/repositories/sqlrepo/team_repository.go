@@ -22,19 +22,42 @@ func NewTeamRepository(db *sql.DB) *TeamRepository {
 	return &TeamRepository{Conn: db}
 }
 
-func (repo *TeamRepository) SaveTeam(t models.Team) error {
+func (repo *TeamRepository) SaveTeam(t []models.TeamInfo) error {
 	query := `
-	INSERT INTO teams (id, name, code, country, founded, national, logo)
-	VALUES (?, ?, ?, ?, ?, ?, ?)
-	`
-	stmt, err := repo.Conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
+		INSERT INTO teams (
+			team_id, name, code, country, founded, national, logo, venue_id, venue_name, venue_address, venue_city, venue_capacity, venue_surface, venue_image 
+		) VALUES `
 
-	_, err = stmt.Exec(t.ID, t.Name, t.Code, t.Country, t.Founded, t.National, t.Logo)
+	values := []interface{}{}
+	for i, team := range t {
+		query += "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		if i < len(t)-1 {
+			query += ","
+		} else {
+			query += ";"
+		}
+		values = append(values,
+			team.TeamId,
+			team.Name,
+			team.Code,
+			team.Country,
+			team.Founded,
+			team.National,
+			team.Logo,
+			team.VenueId,
+			team.VenueName,
+			team.VenueAddress,
+			team.VenueCity,
+			team.VenueCapacity,
+			team.VenueSurface,
+			team.VenueImage,
+		)
+
+	}
+
+	_, err := repo.Conn.Exec(query, values...)
 	if err != nil {
+		logger.GetLogger().Error("Error saving team: " + err.Error())
 		return err
 	}
 	logger.GetLogger().Info("Saved Team")

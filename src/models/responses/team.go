@@ -176,7 +176,7 @@ type FixtureStatsResponse struct {
 	} `json:"response"`
 }
 
-type TeamDetails struct {
+type TeamInfo struct {
 	Team struct {
 		ID       int    `json:"id"`
 		Name     string `json:"name"`
@@ -197,7 +197,8 @@ type TeamDetails struct {
 	} `json:"venue"`
 }
 
-type TeamResponse struct {
+// INFO: For endpoint: v3.football.api-sports.io/teams
+type TeamsInfoResponse struct {
 	BasicInfoResponse
-	Response []TeamDetails `json:"response"`
+	Response []TeamInfo `json:"response"`
 }
