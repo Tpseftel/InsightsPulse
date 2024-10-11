@@ -145,7 +145,7 @@ func (repo *TeamRepository) GetLastUpdatedTime(tableName, leaugeId string) (time
 		FROM ` + tableName + `
 		WHERE league_id = '` + leaugeId + `'
 	`
-	var updateTimeBytes []byte
+	var updateTimeBytes sql.NullString
 	err := repo.Conn.QueryRow(query).Scan(&updateTimeBytes)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -154,7 +154,12 @@ func (repo *TeamRepository) GetLastUpdatedTime(tableName, leaugeId string) (time
 		logger.GetLogger().Error("Error getting last updated time: " + err.Error())
 		return time.Time{}, errors.New("error getting last updated time")
 	}
-	updatedAtStr := string(updateTimeBytes)
+	// Check if the result is NULL or empty
+	if !updateTimeBytes.Valid || updateTimeBytes.String == "" {
+		logger.GetLogger().Error("There is no table yet -- First Fetch")
+		return time.Now().AddDate(-1, 0, 0), nil // INFO: Return a time in the past one year back
+	}
+	updatedAtStr := updateTimeBytes.String
 	updateTime, err := time.Parse(timeLayout, updatedAtStr)
 	if err != nil {
 		logger.GetLogger().Error("Error parsing time: " + err.Error())
