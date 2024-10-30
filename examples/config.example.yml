@@ -1,0 +1,9 @@
+user: "myuser"
+password: "mypassword"
+db_name: "mydbname"
+host: "mariadb"
+port: "3306"
+api_football_key: "myapikey"
+api_football_url: "https://v3.football.api-sports.io"
+api_requests_per_day_limit: 100
+api_requests_per_minute_limit: 10
